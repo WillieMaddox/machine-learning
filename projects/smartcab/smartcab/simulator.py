@@ -184,7 +184,8 @@ class Simulator(object):
                         self.last_updated = self.current_time
                     
                     # Render text
-                    self.render_text(trial, testing)
+                    if self.display:
+                        self.render_text(trial, testing)
 
                     # Render GUI and sleep
                     if self.display:
