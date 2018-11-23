@@ -352,10 +352,8 @@ class Environment(object):
             # Move the agent
             if action is not None:
                 location = (
-                    (location[0] + heading[0] - self.bounds[0]) % (self.bounds[2] - self.bounds[0] + 1) + self.bounds[
-                        0],
-                    (location[1] + heading[1] - self.bounds[1]) % (self.bounds[3] - self.bounds[1] + 1) + self.bounds[
-                        1])  # wrap-around
+                    (location[0] + heading[0] - self.bounds[0]) % (self.bounds[2] - self.bounds[0] + 1) + self.bounds[0],
+                    (location[1] + heading[1] - self.bounds[1]) % (self.bounds[3] - self.bounds[1] + 1) + self.bounds[1])  # wrap-around
                 state['location'] = location
                 state['heading'] = heading
         # Agent attempted invalid move
@@ -416,8 +414,7 @@ class Environment(object):
         dx = dx1 if dx1 < dx2 else dx2
 
         dy1 = abs(b[1] - a[1])
-        dy2 = abs(self.
-                  grid_size[1] - dy1)
+        dy2 = abs(self.grid_size[1] - dy1)
         dy = dy1 if dy1 < dy2 else dy2
 
         return dx + dy
@@ -450,8 +447,8 @@ class DummyAgent(Agent):
     color_choices = ['cyan', 'red', 'blue', 'green', 'orange', 'magenta', 'yellow']
 
     def __init__(self, env):
-        super(DummyAgent, self).__init__(
-            env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
+        # sets self.env = env, state = None, next_waypoint = None, and a default color
+        super(DummyAgent, self).__init__(env)
         self.next_waypoint = random.choice(Environment.valid_actions[1:])
         self.color = random.choice(self.color_choices)
 

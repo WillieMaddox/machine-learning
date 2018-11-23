@@ -338,8 +338,10 @@ class Simulator(object):
         self.font = self.pygame.font.Font(None, 20)
         for agent, state in self.env.agent_states.items():
             # Compute precise agent location here (back from the intersection some)
-            agent_offset = (2 * state['heading'][0] * self.agent_circle_radius + self.agent_circle_radius * state['heading'][1] * 0.5, \
-                            2 * state['heading'][1] * self.agent_circle_radius - self.agent_circle_radius * state['heading'][0] * 0.5)
+            agent_offset = (
+                2 * state['heading'][0] * self.agent_circle_radius + self.agent_circle_radius * state['heading'][1] * 0.5,
+                2 * state['heading'][1] * self.agent_circle_radius - self.agent_circle_radius * state['heading'][0] * 0.5
+            )
 
             agent_pos = (state['location'][0] * self.env.block_size - agent_offset[0], state['location'][1] * self.env.block_size - agent_offset[1])
             agent_color = self.colors[agent.color]
@@ -357,10 +359,12 @@ class Simulator(object):
 
             if state['destination'] is not None:
                 self.screen.blit(self._logo,
-                    self.pygame.rect.Rect(state['destination'][0] * self.env.block_size - self.road_width/2, \
-                        state['destination'][1]*self.env.block_size - self.road_width/2, \
-                        state['destination'][0]*self.env.block_size + self.road_width/2, \
-                        state['destination'][1]*self.env.block_size + self.road_width/2))
+                    self.pygame.rect.Rect(
+                        state['destination'][0] * self.env.block_size - self.road_width/2,
+                        state['destination'][1] * self.env.block_size - self.road_width/2,
+                        state['destination'][0] * self.env.block_size + self.road_width/2,
+                        state['destination'][1] * self.env.block_size + self.road_width/2
+                    ))
 
         # * Overlays
         self.font = self.pygame.font.Font(None, 50)
