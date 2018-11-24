@@ -117,7 +117,7 @@ class LearningAgent(Agent):
 
         max_actions = []
         maxQ = -9999.0
-        for action, Qvalue in sorted(self.Q[state].items(), key=operator.itemgetter(1), reverse=True):
+        for action, (counts, Qvalue) in sorted(self.Q[state].items(), key=lambda x: x[1][1], reverse=True):
             if Qvalue == maxQ:
                 max_actions.append(action)
             elif Qvalue > maxQ:
@@ -157,7 +157,7 @@ class LearningAgent(Agent):
 
         if self.learning:
             if state not in self.Q:
-                self.Q[state] = {a: 0.0 for a in self.valid_actions}
+                self.Q[state] = {a: [0, 0.0] for a in self.valid_actions}
         return
 
     def choose_action(self, state):
@@ -199,7 +199,8 @@ class LearningAgent(Agent):
         # self.Q[state][action] = score
         # self.Q[state][action] += self.alpha * (reward + self.get_maxQ(state) - self.Q[state][action])
         if self.learning:
-            self.Q[state][action] += self.alpha * (reward - self.Q[state][action])
+            self.Q[state][action][0] += 1
+            self.Q[state][action][1] += self.alpha * (reward - self.Q[state][action][1])
         return
 
     def update(self):

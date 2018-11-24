@@ -238,8 +238,11 @@ class Simulator(object):
 
                 for state in a.Q:
                     f.write("{}\n".format(state))
-                    for action, reward in a.Q[state].items():
-                        f.write(" -- {} : {:.2f}\n".format(action, reward))
+                    for action, (counts, reward) in a.Q[state].items():
+                        if action is None:
+                            f.write(" -- {:7} : {:>4} {:>.2f}\n".format('None', counts, reward))
+                        else:
+                            f.write(" -- {:7} : {:>4} {:>.2f}\n".format(action, counts, reward))
                     f.write("\n")  
                 self.table_file.close()
 
