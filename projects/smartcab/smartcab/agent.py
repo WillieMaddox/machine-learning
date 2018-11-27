@@ -57,6 +57,8 @@ class LearningAgent(Agent):
             self.alpha = 0
         else:
             # self.epsilon -= 0.05
+            # self.epsilon = 0.95 ** self.count
+            self.epsilon = 1.0 / self.count ** 2
             self.epsilon = math.exp(-0.005 * self.count)
             self.alpha -= 0.001
         return None
