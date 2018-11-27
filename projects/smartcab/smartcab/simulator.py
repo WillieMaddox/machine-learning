@@ -95,12 +95,8 @@ class Simulator(object):
             if a.learning:
                 if self.optimized:  # Whether the user is optimizing the parameters and decay functions
                     self.log_filename = os.path.join("logs", "sim_improved-learning.csv")
-                    self.table_filename = os.path.join("logs", "sim_improved-learning.txt")
-                else: 
+                else:
                     self.log_filename = os.path.join("logs", "sim_default-learning.csv")
-                    self.table_filename = os.path.join("logs", "sim_default-learning.txt")
-
-                self.table_file = open(self.table_filename, 'w')
             else:
                 self.log_filename = os.path.join("logs", "sim_no-learning.csv")
             
@@ -230,21 +226,7 @@ class Simulator(object):
         if self.log_metrics:
 
             if a.learning:
-                f = self.table_file
-                
-                f.write("/-----------------------------------------\n")
-                f.write("| State-action rewards from Q-Learning\n")
-                f.write("\-----------------------------------------\n\n")
-
-                for state in a.Q:
-                    f.write("{}\n".format(state))
-                    for action, (counts, reward) in a.Q[state].items():
-                        if action is None:
-                            f.write(" -- {:7} : {:>4} {:>.2f}\n".format('None', counts, reward))
-                        else:
-                            f.write(" -- {:7} : {:>4} {:>.2f}\n".format(action, counts, reward))
-                    f.write("\n")  
-                self.table_file.close()
+                a.save_Q(backup=True)
 
             self.log_file.close()
 

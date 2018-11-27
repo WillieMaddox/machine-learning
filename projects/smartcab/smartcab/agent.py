@@ -1,3 +1,4 @@
+import os
 import math
 import random
 from statistics import median
@@ -69,6 +70,34 @@ class LearningAgent(Agent):
                             for action in self.valid_actions:
                                 self.Q[state][action][0] += 1
                                 self.Q[state][action][1] += self.env.act(self, action) * 0.1
+
+    def save_Q(self, filename=None, backup=True):
+        """
+         Save policy to file.
+
+        :param filename: str, filename to save the file as.
+        :param backup: bool, whether to backup existing policy if it exists. default is True.
+        :return: None
+        """
+        if filename is None:
+            filename = self.table_filename
+
+        if backup and os.path.exists(filename):
+            temp = filename.rsplit('.')
+            backupname = ''.join([temp[0], '_backup.', temp[1]])
+            os.rename(filename, backupname)
+
+        with open(filename, 'w') as ofs:
+            ofs.write("/-----------------------------------------\n")
+            ofs.write("| State-action rewards from Q-Learning\n")
+            ofs.write("\-----------------------------------------\n\n")
+
+            for state in self.Q:
+                ofs.write("{}\n".format(state))
+                for action, (counts, reward) in self.Q[state].items():
+                    ofs.write(" -- {:7} : {:>5} {:>8.2f}\n".format(str(action), counts, reward))
+                ofs.write("\n")
+        return
 
     def build_state(self):
         """ The build_state function is called when the agent requests data from the 
