@@ -1,4 +1,5 @@
 import os
+import ast
 import math
 import random
 from statistics import median
@@ -70,6 +71,19 @@ class LearningAgent(Agent):
                             for action in self.valid_actions:
                                 self.Q[state][action][0] += 1
                                 self.Q[state][action][1] += self.env.act(self, action) * 0.1
+    def load_Q(self):
+
+        with open(self.table_filename, 'r') as ifs:
+            for line in ifs.readlines():
+                if line.startswith('('):
+                    state = ast.literal_eval(line)
+                    self.Q[state] = {}
+                elif line.startswith(' -- '):
+                    fields = line.split()
+                    action = None if fields[1] == 'None' else fields[1]
+                    self.Q[state][action] = [int(fields[3]), float(fields[4])]
+        return
+
 
     def save_Q(self, filename=None, backup=True):
         """
