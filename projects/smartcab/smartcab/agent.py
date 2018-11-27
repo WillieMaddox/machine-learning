@@ -65,9 +65,10 @@ class LearningAgent(Agent):
                     for oncoming in self.valid_actions:
                         for right in self.valid_actions:
                             state = (waypoint, light, left, oncoming, right)
-                            self.Q[state] = {a: 0.0 for a in self.valid_actions}
+                            self.Q[state] = {a: [0, 0.0] for a in self.valid_actions}
                             for action in self.valid_actions:
-                                self.Q[state][action] = self.env.act(self, action) * 0.1
+                                self.Q[state][action][0] += 1
+                                self.Q[state][action][1] += self.env.act(self, action) * 0.1
 
     def build_state(self):
         """ The build_state function is called when the agent requests data from the 
