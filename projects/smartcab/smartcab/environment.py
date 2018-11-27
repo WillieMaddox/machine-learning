@@ -296,6 +296,61 @@ class Environment(object):
             penalty = (math.pow(gradient, fnc) - 1) / (gradient - 1)
 
         # Assess whether the agent can move based on the action chosen.
+        violation = self.compute_violation(action, light, inputs)
+        reward = self.compute_reward(agent, action, light, penalty, violation)
+
+        # If move was valid, move the agent
+        if violation == 0:
+            if action == 'left':
+                heading = (heading[1], -heading[0])
+            elif action == 'right':
+                heading = (-heading[1], heading[0])
+            if action is not None:
+                location = (
+                    (location[0] + heading[0] - self.bounds[0]) % (self.bounds[2] - self.bounds[0] + 1) + self.bounds[0],
+                    (location[1] + heading[1] - self.bounds[1]) % (self.bounds[3] - self.bounds[1] + 1) + self.bounds[1])
+                state['location'] = location
+                state['heading'] = heading
+
+        # Did agent reach the goal after a valid move?
+        if agent is self.primary_agent:
+            if state['location'] == state['destination']:
+                # Did agent get to destination before deadline?
+                if state['deadline'] >= 0:
+                    self.trial_data['success'] = 1
+
+                # Stop the trial
+                self.done = True
+                self.success = True
+
+                if self.verbose:  # Debugging
+                    print("Environment.act(): Primary agent has reached destination!")
+
+            if self.verbose:  # Debugging
+                print(f"Environment.act() [POST]: location: {location}, heading: {heading}, action: {action}, reward: {reward}")
+
+            # Update metrics
+            self.step_data['t'] = self.t
+            self.step_data['violation'] = violation
+            self.step_data['state'] = agent.get_state()
+            self.step_data['deadline'] = state['deadline']
+            self.step_data['waypoint'] = agent.get_next_waypoint()
+            self.step_data['inputs'] = inputs
+            self.step_data['light'] = light
+            self.step_data['action'] = action
+            self.step_data['reward'] = reward
+
+            self.trial_data['final_deadline'] = state['deadline'] - 1
+            self.trial_data['net_reward'] += reward
+            self.trial_data['actions'][violation] += 1
+
+            if self.verbose:  # Debugging
+                print("Environment.act(): Step data: {}".format(self.step_data))
+
+        return reward
+
+    def compute_violation(self, action, light, inputs):
+
         # Either the action is okay to perform, or falls under 4 types of violations:
         # 0: Action okay
         # 1: Minor traffic violation
@@ -303,10 +358,6 @@ class Environment(object):
         # 3: Minor traffic violation causing an accident
         # 4: Major traffic violation causing an accident
         violation = 0
-
-        # Reward scheme
-        # First initialize reward uniformly random from [-1, 1]
-        reward = 2 * random.random() - 1
 
         # Agent wants to drive forward:
         if action == 'forward':
@@ -326,20 +377,27 @@ class Environment(object):
             else:  # Green light
                 if inputs['oncoming'] == 'right' or inputs['oncoming'] == 'forward':  # Incoming traffic
                     violation = 3  # Accident
-                else:  # Valid move!
-                    heading = (heading[1], -heading[0])
+                else:
+                    violation = 0  # Valid move!
 
         # Agent wants to drive right:
         elif action == 'right':
             if light != 'green' and inputs['left'] == 'forward':  # Cross traffic
                 violation = 3  # Accident
-            else:  # Valid move!
-                heading = (-heading[1], heading[0])
+            else:
+                violation = 0  # Valid move!
 
         # Agent wants to perform no action:
         elif action is None:
             if light == 'green':
                 violation = 1  # Minor violation
+
+        return violation
+
+    def compute_reward(self, agent, action, light, penalty, violation):
+        # Reward scheme
+        # First initialize reward uniformly random from [-1, 1]
+        reward = 2 * random.random() - 1
 
         # Did the agent attempt a valid move?
         if violation == 0:
@@ -352,16 +410,7 @@ class Environment(object):
                 reward += 2 - penalty  # (2, 1)
             else:  # Valid but incorrect
                 reward += 1 - penalty  # (1, 0)
-
-            # Move the agent
-            if action is not None:
-                location = (
-                    (location[0] + heading[0] - self.bounds[0]) % (self.bounds[2] - self.bounds[0] + 1) + self.bounds[0],
-                    (location[1] + heading[1] - self.bounds[1]) % (self.bounds[3] - self.bounds[1] + 1) + self.bounds[1])  # wrap-around
-                state['location'] = location
-                state['heading'] = heading
-        # Agent attempted invalid move
-        else:
+        else:  # Agent attempted invalid move
             if violation == 1:  # Minor violation
                 reward += -5
             elif violation == 2:  # Major violation
@@ -370,44 +419,6 @@ class Environment(object):
                 reward += -20
             elif violation == 4:  # Major accident
                 reward += -40
-
-        # Did agent reach the goal after a valid move?
-        if agent is self.primary_agent:
-            if state['location'] == state['destination']:
-                # Did agent get to destination before deadline?
-                if state['deadline'] >= 0:
-                    self.trial_data['success'] = 1
-
-                # Stop the trial
-                self.done = True
-                self.success = True
-
-                if self.verbose:  # Debugging
-                    print("Environment.act(): Primary agent has reached destination!")
-
-            if self.verbose:  # Debugging
-                print("Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location,
-                                                                                                           heading,
-                                                                                                           action,
-                                                                                                           reward))
-
-            # Update metrics
-            self.step_data['t'] = self.t
-            self.step_data['violation'] = violation
-            self.step_data['state'] = agent.get_state()
-            self.step_data['deadline'] = state['deadline']
-            self.step_data['waypoint'] = agent.get_next_waypoint()
-            self.step_data['inputs'] = inputs
-            self.step_data['light'] = light
-            self.step_data['action'] = action
-            self.step_data['reward'] = reward
-
-            self.trial_data['final_deadline'] = state['deadline'] - 1
-            self.trial_data['net_reward'] += reward
-            self.trial_data['actions'][violation] += 1
-
-            if self.verbose:  # Debugging
-                print("Environment.act(): Step data: {}".format(self.step_data))
 
         return reward
 
