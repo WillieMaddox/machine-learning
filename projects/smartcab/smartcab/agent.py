@@ -298,7 +298,7 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(verbose=False)
+    env = Environment(verbose=False, num_dummies=300, grid_size=(13, 11))
     
     ##############
     # Create the driving agent
@@ -306,7 +306,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True, alpha=0.9)
+    agent = env.create_agent(LearningAgent, learning=True, alpha=1.0, pre_load=True, pre_build=False)
 
     ##############
     # Follow the driving agent
@@ -328,7 +328,7 @@ def run():
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(tolerance=0.03, n_test=10)
+    sim.run(tolerance=0.01, n_test=100)
 
 
 if __name__ == '__main__':
