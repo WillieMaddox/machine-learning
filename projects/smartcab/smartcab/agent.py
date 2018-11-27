@@ -71,10 +71,13 @@ class LearningAgent(Agent):
                     for oncoming in self.valid_actions:
                         for right in self.valid_actions:
                             state = (waypoint, light, left, oncoming, right)
-                            self.Q[state] = {a: [0, 0.0] for a in self.valid_actions}
+                            self.Q[state] = {}
+                            inputs = {'light': light, 'left': left, 'oncoming': oncoming, 'right': right}
                             for action in self.valid_actions:
-                                self.Q[state][action][0] += 1
-                                self.Q[state][action][1] += self.env.act(self, action) * 0.1
+                                violation = self.env.compute_violation(action, light, inputs)
+                                reward = self.env.compute_reward(self, action, light, 0, violation)
+                                self.Q[state][action] = [1, reward]
+
     def load_Q(self):
 
         with open(self.table_filename, 'r') as ifs:
