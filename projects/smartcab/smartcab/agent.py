@@ -80,6 +80,8 @@ class LearningAgent(Agent):
                                 reward = self.env.compute_reward(self, action, light, 0, violation)
                                 self.Q[state][action] = [1, reward]
 
+        self.save_Q(os.path.join("logs", "sim_improved-learning_build.txt"))
+
     def load_Q(self):
 
         with open(self.table_filename, 'r') as ifs:
