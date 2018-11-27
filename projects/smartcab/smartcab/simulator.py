@@ -79,10 +79,10 @@ class Simulator(object):
                 self.paused = False
             except ImportError as e:
                 self.display = False
-                print("Simulator.__init__(): Unable to import pygame; display disabled.\n{}: {}".format(e.__class__.__name__, e))
+                print(f"Simulator.__init__(): Unable to import pygame; display disabled.\n{e.__class__.__name__}: {e}")
             except Exception as e:
                 self.display = False
-                print("Simulator.__init__(): Error initializing GUI objects; display disabled.\n{}: {}".format(e.__class__.__name__, e))
+                print(f"Simulator.__init__(): Error initializing GUI objects; display disabled.\n{e.__class__.__name__}: {e}")
 
         # Setup metrics to report
         self.log_metrics = log_metrics

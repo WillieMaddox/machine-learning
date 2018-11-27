@@ -22,8 +22,7 @@ import ast
 def calculate_safety(data):
     """ Calculates the safety rating of the smartcab during testing. """
 
-    good_ratio = data['good_actions'].sum() * 1.0 / \
-                 (data['initial_deadline'] - data['final_deadline']).sum()
+    good_ratio = data['good_actions'].sum() * 1.0 / (data['initial_deadline'] - data['final_deadline']).sum()
 
     if good_ratio == 1:  # Perfect driving
         return "A+", "green"
@@ -75,21 +74,27 @@ def plot_trials(csv):
     # Create additional features
     data['average_reward'] = (data['net_reward'] / (data['initial_deadline'] - data['final_deadline'])).rolling(
         window=10, center=False).mean()
-    data['reliability_rate'] = (data['success'] * 100).rolling(window=10,
-                                                               center=False).mean()  # compute avg. net reward with window=10
+    data['reliability_rate'] = (data['success'] * 100).rolling(
+        window=10, center=False).mean()  # compute avg. net reward with window=10
     data['good_actions'] = data['actions'].apply(lambda x: ast.literal_eval(x)[0])
-    data['good'] = (data['good_actions'] * 1.0 / \
-                    (data['initial_deadline'] - data['final_deadline'])).rolling(window=10, center=False).mean()
-    data['minor'] = (data['actions'].apply(lambda x: ast.literal_eval(x)[1]) * 1.0 / \
-                     (data['initial_deadline'] - data['final_deadline'])).rolling(window=10, center=False).mean()
-    data['major'] = (data['actions'].apply(lambda x: ast.literal_eval(x)[2]) * 1.0 / \
-                     (data['initial_deadline'] - data['final_deadline'])).rolling(window=10, center=False).mean()
-    data['minor_acc'] = (data['actions'].apply(lambda x: ast.literal_eval(x)[3]) * 1.0 / \
-                         (data['initial_deadline'] - data['final_deadline'])).rolling(window=10, center=False).mean()
-    data['major_acc'] = (data['actions'].apply(lambda x: ast.literal_eval(x)[4]) * 1.0 / \
-                         (data['initial_deadline'] - data['final_deadline'])).rolling(window=10, center=False).mean()
-    data['epsilon'] = data['parameters'].apply(lambda x: ast.literal_eval(x)['e'])
-    data['alpha'] = data['parameters'].apply(lambda x: ast.literal_eval(x)['a'])
+    data['good'] = (data['good_actions'] * 1.0 / (data['initial_deadline'] - data['final_deadline'])).rolling(
+        window=10, center=False).mean()
+    data['minor'] = (data['actions'].apply(
+        lambda x: ast.literal_eval(x)[1]) * 1.0 / (data['initial_deadline'] - data['final_deadline'])).rolling(
+        window=10, center=False).mean()
+    data['major'] = (data['actions'].apply(
+        lambda x: ast.literal_eval(x)[2]) * 1.0 / (data['initial_deadline'] - data['final_deadline'])).rolling(
+        window=10, center=False).mean()
+    data['minor_acc'] = (data['actions'].apply(
+        lambda x: ast.literal_eval(x)[3]) * 1.0 / (data['initial_deadline'] - data['final_deadline'])).rolling(
+        window=10, center=False).mean()
+    data['major_acc'] = (data['actions'].apply(
+        lambda x: ast.literal_eval(x)[4]) * 1.0 / (data['initial_deadline'] - data['final_deadline'])).rolling(
+        window=10, center=False).mean()
+    data['epsilon'] = data['parameters'].apply(
+        lambda x: ast.literal_eval(x)['e'])
+    data['alpha'] = data['parameters'].apply(
+        lambda x: ast.literal_eval(x)['a'])
 
     # Create training and testing subsets
     training_data = data[data['testing'] == False]
@@ -152,8 +157,7 @@ def plot_trials(csv):
 
     ax.set_yticks(np.linspace(0, maximum + 0.01, 10))
 
-    ax.plot(actions['trial'], (1 - actions['good']), color='black', label='Total Bad Actions', linestyle='dotted',
-            linewidth=3)
+    ax.plot(actions['trial'], (1 - actions['good']), color='black', label='Total Bad Actions', linestyle='dotted', linewidth=3)
     ax.plot(actions['trial'], actions['minor'], color='orange', label='Minor Violation', linestyle='dashed')
     ax.plot(actions['trial'], actions['major'], color='orange', label='Major Violation', linewidth=2)
     ax.plot(actions['trial'], actions['minor_acc'], color='red', label='Minor Accident', linestyle='dashed')

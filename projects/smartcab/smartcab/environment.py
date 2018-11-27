@@ -27,8 +27,8 @@ class TrafficLight(object):
 class Environment(object):
     """Environment within which all agents operate."""
 
-    valid_actions = [None, 'forward', 'left', 'right']
-    valid_inputs = {'light': TrafficLight.valid_states, 'oncoming': valid_actions, 'left': valid_actions,
+    valid_actions = [None, 'left', 'forward', 'right']
+    valid_inputs = {'light': TrafficLight.valid_states, 'left': valid_actions, 'oncoming': valid_actions,
                     'right': valid_actions}
     valid_headings = [(1, 0), (0, -1), (-1, 0), (0, 1)]  # E, N, W, S
     hard_time_limit = -100  # Set a hard time limit even if deadline is not enforced.
@@ -70,7 +70,7 @@ class Environment(object):
             self.roads.append(((self.bounds[0] - self.hang, y), (self.bounds[0], y)))
             self.roads.append(((self.bounds[2] + self.hang, y), (self.bounds[2], y)))
 
-            # Create dummy agents
+        # Create dummy agents
         for i in range(self.num_dummies):
             self.create_agent(DummyAgent)
 
@@ -236,29 +236,32 @@ class Environment(object):
             (not self.intersections[location].state) and heading[0] != 0) else 'red'
 
         # Populate oncoming, left, right
-        oncoming = None
         left = None
+        oncoming = None
         right = None
-        for other_agent, other_state in self.agent_states.items():
-            if agent == other_agent or location != other_state['location'] or (
-                            heading[0] == other_state['heading'][0] and heading[1] == other_state['heading'][1]):
+        for agent_other, state_other in self.agent_states.items():
+            if agent == agent_other:
+                continue
+            if location != state_other['location']:
+                continue
+            if heading[0] == state_other['heading'][0] and heading[1] == state_other['heading'][1]:
                 continue
             # For dummy agents, ignore the primary agent
             # This is because the primary agent is not required to follow the waypoint
-            if other_agent == self.primary_agent:
+            if agent_other == self.primary_agent:
                 continue
-            other_heading = other_agent.get_next_waypoint()
-            if (heading[0] * other_state['heading'][0] + heading[1] * other_state['heading'][1]) == -1:
+            heading_other = agent_other.get_next_waypoint()
+            if (heading[0] * state_other['heading'][0] + heading[1] * state_other['heading'][1]) == -1:
                 if oncoming != 'left':  # we don't want to override oncoming == 'left'
-                    oncoming = other_heading
-            elif (heading[1] == other_state['heading'][0] and -heading[0] == other_state['heading'][1]):
+                    oncoming = heading_other
+            elif heading[1] == state_other['heading'][0] and -heading[0] == state_other['heading'][1]:
                 if right != 'forward' and right != 'left':  # we don't want to override right == 'forward or 'left'
-                    right = other_heading
+                    right = heading_other
             else:
                 if left != 'forward':  # we don't want to override left == 'forward'
-                    left = other_heading
+                    left = heading_other
 
-        return {'light': light, 'oncoming': oncoming, 'left': left, 'right': right}
+        return {'light': light, 'left': left, 'oncoming': oncoming, 'right': right}
 
     def get_deadline(self, agent):
         """ Returns the deadline remaining for an agent. """
@@ -404,6 +407,7 @@ class Environment(object):
 
             if self.verbose:  # Debugging
                 print("Environment.act(): Step data: {}".format(self.step_data))
+
         return reward
 
     def compute_dist(self, a, b):

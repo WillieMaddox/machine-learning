@@ -1,5 +1,5 @@
-import random
 import math
+import random
 from statistics import median
 import operator
 from environment import Agent, Environment
@@ -45,8 +45,8 @@ class LearningAgent(Agent):
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
 
-        # self.epsilon -= 0.05
         self.count += 1
+        # self.epsilon -= 0.05
         self.epsilon = math.exp(-0.005 * self.count)
         self.alpha -= 0.001
         if testing:
@@ -251,7 +251,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=2.0, display=True, log_metrics=True, optimized=True)
+    sim = Simulator(env, update_delay=0.0001, display=False, log_metrics=True, optimized=True)
     
     ##############
     # Run the simulator
