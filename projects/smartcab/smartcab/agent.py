@@ -203,8 +203,9 @@ class LearningAgent(Agent):
         # Calculate the zero Q-values of all actions for a given state
 
         actions = []
-        for action, Qvalue in self.Q[state].items():
-            if abs(Qvalue) < 1e-12:
+        for action, (counts, Qvalue) in sorted(self.Q[state].items(), key=lambda x: x[1][1], reverse=True):
+            # if abs(Qvalue) < 1e-12:
+            if counts == 0:
                 actions.append(action)
 
         return random.choice(actions) if actions else self.get_max_action(state)
@@ -244,8 +245,8 @@ class LearningAgent(Agent):
         if self.learning:
             if random.random() > self.epsilon:
                 action = self.get_max_action(state)
-            # else:
-            #     action = self.get_zero_action(state)
+            else:
+                action = self.get_zero_action(state)
         return action
 
     def learn(self, state, action, reward):
