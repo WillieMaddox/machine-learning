@@ -47,13 +47,13 @@ class LearningAgent(Agent):
         # If 'testing' is True, set epsilon and alpha to 0
 
         self.count += 1
-        # self.epsilon -= 0.05
-        self.epsilon = math.exp(-0.005 * self.count)
-        self.alpha -= 0.001
         if testing:
             self.epsilon = 0
             self.alpha = 0
-
+        else:
+            # self.epsilon -= 0.05
+            self.epsilon = math.exp(-0.005 * self.count)
+            self.alpha -= 0.001
         return None
 
     def build_Q(self):
@@ -107,7 +107,7 @@ class LearningAgent(Agent):
         # Collect data about the environment
         waypoint = self.planner.next_waypoint() # The next waypoint 
         inputs = self.env.sense(self)           # Visual input - intersection light and traffic
-        deadline = self.env.get_deadline(self)  # Remaining deadline
+        # deadline = self.env.get_deadline(self)  # Remaining deadline
 
         ########### 
         #  TO DO  #
@@ -120,7 +120,6 @@ class LearningAgent(Agent):
         
         # Set 'state' as a tuple of relevant data for the agent        
         state = (waypoint, inputs['light'], inputs['left'], inputs['oncoming'], inputs['right'])
-        # state = (waypoint, inputs['left'], inputs['oncoming'], inputs['right'])
 
         return state
 
@@ -208,7 +207,7 @@ class LearningAgent(Agent):
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
 
         if self.learning:
-            if self.epsilon < random.random():
+            if random.random() > self.epsilon:
                 action = self.get_max_action(state)
             # else:
             #     action = self.get_zero_action(state)
@@ -243,7 +242,6 @@ class LearningAgent(Agent):
         action = self.choose_action(state)  # Choose an action
         reward = self.env.act(self, action) # Receive a reward
         self.learn(state, action, reward)   # Q-learn
-
         return
         
 
@@ -266,7 +264,6 @@ def run():
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
     agent = env.create_agent(LearningAgent, learning=True, alpha=0.9)
-    # agent.build_Q()
 
     ##############
     # Follow the driving agent

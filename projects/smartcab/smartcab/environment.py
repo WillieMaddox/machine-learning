@@ -28,8 +28,12 @@ class Environment(object):
     """Environment within which all agents operate."""
 
     valid_actions = [None, 'left', 'forward', 'right']
-    valid_inputs = {'light': TrafficLight.valid_states, 'left': valid_actions, 'oncoming': valid_actions,
-                    'right': valid_actions}
+    valid_inputs = {
+        'light': TrafficLight.valid_states,
+        'left': valid_actions,
+        'oncoming': valid_actions,
+        'right': valid_actions
+    }
     valid_headings = [(1, 0), (0, -1), (-1, 0), (0, 1)]  # E, N, W, S
     hard_time_limit = -100  # Set a hard time limit even if deadline is not enforced.
 
@@ -130,9 +134,7 @@ class Environment(object):
         distance = self.compute_dist(start, destination)
         deadline = distance * 5  # 5 time steps per intersection away
         if self.verbose:  # Debugging
-            print("Environment.reset(): Trial set up with start = {}, destination = {}, deadline = {}".format(start,
-                                                                                                              destination,
-                                                                                                              deadline))
+            print(f"Environment.reset(): Trial set up with start = {start}, destination = {destination}, deadline = {deadline}")
 
         # Create a map of all possible initial positions
         positions = dict()
@@ -282,6 +284,16 @@ class Environment(object):
             (not self.intersections[location].state) and heading[0] != 0) else 'red'
         inputs = self.sense(agent)
 
+        # No penalty given to an agent that has no enforced deadline
+        penalty = 0
+        # If the deadline is enforced, give a penalty based on time remaining
+        if self.enforce_deadline:
+            # Create a penalty factor as a function of remaining deadline
+            # Scales reward multiplicatively from [0, 1]
+            fnc = self.t * 1.0 / (self.t + state['deadline']) if agent.primary_agent else 0.0
+            gradient = 10
+            penalty = (math.pow(gradient, fnc) - 1) / (gradient - 1)
+
         # Assess whether the agent can move based on the action chosen.
         # Either the action is okay to perform, or falls under 4 types of violations:
         # 0: Action okay
@@ -294,18 +306,6 @@ class Environment(object):
         # Reward scheme
         # First initialize reward uniformly random from [-1, 1]
         reward = 2 * random.random() - 1
-
-        # Create a penalty factor as a function of remaining deadline
-        # Scales reward multiplicatively from [0, 1]
-        fnc = self.t * 1.0 / (self.t + state['deadline']) if agent.primary_agent else 0.0
-        gradient = 10
-
-        # No penalty given to an agent that has no enforced deadline
-        penalty = 0
-
-        # If the deadline is enforced, give a penalty based on time remaining
-        if self.enforce_deadline:
-            penalty = (math.pow(gradient, fnc) - 1) / (gradient - 1)
 
         # Agent wants to drive forward:
         if action == 'forward':
