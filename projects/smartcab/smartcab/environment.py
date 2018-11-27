@@ -104,6 +104,7 @@ class Environment(object):
         """ When called, set_primary_agent sets 'agent' as the primary agent.
             The primary agent is the smartcab that is followed in the environment. """
 
+        agent.create_Q()
         self.primary_agent = agent
         agent.primary_agent = True
         self.enforce_deadline = enforce_deadline

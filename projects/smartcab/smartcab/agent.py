@@ -13,7 +13,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """ 
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5, pre_load=False, pre_build=False):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment 
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -27,8 +27,12 @@ class LearningAgent(Agent):
         ###########
         #  TO DO  #
         ###########
-        # self.build_Q()
         # Set any additional class parameters as needed
+
+        learning_str = 'improved' if learning else 'default'
+        self.table_filename = os.path.join("logs", "sim_" + learning_str + "-learning.txt")
+        if learning:
+            self.create_Q = self.create_Q_generator(pre_load, pre_build)
         # self.n_trials = 20
         self.count = 0
 
@@ -84,6 +88,23 @@ class LearningAgent(Agent):
                     self.Q[state][action] = [int(fields[3]), float(fields[4])]
         return
 
+    def create_Q_generator(self, pre_load, pre_build):
+        # pre_build? pre_load? file_exists? function
+        #    1          1          1        load_Q()
+        #    1          1          0        build_Q()
+        #    1          0          1        build_Q()
+        #    1          0          0        build_Q()
+        #    0          1          1        load_Q()
+        #    0          1          0        pass
+        #    0          0          1        pass
+        #    0          0          0        pass
+
+        if pre_load and os.path.exists(self.table_filename):
+            return self.load_Q
+        elif pre_build:
+            return self.build_Q
+        else:
+            return lambda: None
 
     def save_Q(self, filename=None, backup=True):
         """
